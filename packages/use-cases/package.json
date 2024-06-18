@@ -1,0 +1,14 @@
+{
+  "name": "planning-poker/use-cases",
+  "module": "src/index.ts",
+  "type": "module",
+  "dependencies": {
+    "planning-poker/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
