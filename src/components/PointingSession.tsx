@@ -7,6 +7,11 @@ export function PointingSession(
   return (
     <Layout>
       <h1>Session {viewPointingSessionOutput.id}</h1>
+      <ul>
+        {viewPointingSessionOutput.participants.map((p) => (
+          <li>{p}</li>
+        ))}
+      </ul>
     </Layout>
   );
 }

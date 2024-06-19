@@ -1,8 +1,12 @@
-import { Entity } from "./Entity";
+import { Entity } from './Entity';
 
 export class PointingSession extends Entity {
   private _participants: Set<string>;
   private _votes: Map<string, number>;
+
+  get participants() {
+    return Array.from(this._participants.values());
+  }
 
   constructor() {
     super();

@@ -60,10 +60,7 @@ Bun.serve({
         pointingSessionId: sessionId,
         participantName: participant,
       });
-      const output = await viewPointingSession.execute(sessionId);
-      return new Response(renderToString(PointingSession(output)), {
-        headers: { 'Content-Type': 'text/html' },
-      });
+      return Response.redirect(`/pointing-session/${sessionId}`);
     }
 
     if (url.pathname.startsWith('/pointing-session') && req.method === 'GET') {

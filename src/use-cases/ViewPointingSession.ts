@@ -2,6 +2,7 @@ import { type PointingSessionRepository } from '../domain/PointingSessionReposit
 
 export type ViewPointingSessionOutput = {
   id: string;
+  participants: string[];
 };
 
 export class ViewPointingSessionUseCase {
@@ -10,6 +11,6 @@ export class ViewPointingSessionUseCase {
   async execute(pointingSessionId: string): Promise<ViewPointingSessionOutput> {
     const session =
       await this.pointingSessionRepository.findById(pointingSessionId);
-    return { id: session.id };
+    return { id: session.id, participants: session.participants };
   }
 }
