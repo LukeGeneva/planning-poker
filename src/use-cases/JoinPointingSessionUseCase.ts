@@ -1,4 +1,4 @@
-import type { PointingSessionRepository } from 'planning-poker/domain';
+import type { PointingSessionRepository } from '../domain/PointingSessionRepository';
 
 export type JoinPointingSessionInput = {
   pointingSessionId: string;

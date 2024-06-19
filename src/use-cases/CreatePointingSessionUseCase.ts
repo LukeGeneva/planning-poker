@@ -1,7 +1,5 @@
-import {
-  PointingSession,
-  type PointingSessionRepository,
-} from 'planning-poker/domain';
+import { PointingSession } from '../domain/PointingSession';
+import { type PointingSessionRepository } from '../domain/PointingSessionRepository';
 
 export type CreatePointingSessionOutput = {
   pointingSessionId: string;
