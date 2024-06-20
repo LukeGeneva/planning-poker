@@ -1,10 +1,10 @@
 import { renderToString } from 'react-dom/server';
-import { Home } from './components/Home';
+import { Home } from './pages/home';
 import { MemoryPointingSessionRepository } from './adapters/MemoryPointingSessionRepository';
 import { CreatePointingSessionUseCase } from './use-cases/CreatePointingSessionUseCase';
-import { ViewPointingSessionUseCase } from './use-cases/ViewPointingSession';
-import { PointingSession } from './components/PointingSession';
-import { SetName } from './components/SetName';
+import { ViewPointingSessionUseCase } from './use-cases/ViewPointingSessionUseCase';
+import { PointingSession } from './pages/pointing-session';
+import { SetName } from './pages/set-name';
 import { JoinPointingSessionUseCase } from './use-cases/JoinPointingSessionUseCase';
 
 const pointingSessionRepository = new MemoryPointingSessionRepository();
@@ -92,3 +92,5 @@ Bun.serve({
     },
   },
 });
+
+console.log('Server listening on port 3000.');
