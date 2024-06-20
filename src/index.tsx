@@ -27,8 +27,8 @@ Bun.serve({
         headers: { 'Content-Type': 'text/html' },
       });
 
-    if (url.pathname === '/index.js')
-      return new Response(Bun.file('./src/public/index.js'));
+    if (url.pathname.endsWith('.js'))
+      return new Response(Bun.file(`./src/public${url.pathname}`));
 
     if (url.pathname === '/pointing-session' && req.method === 'POST') {
       const output = await createPointingSession.execute();
@@ -82,7 +82,7 @@ Bun.serve({
   },
   websocket: {
     open(ws) {
-      // console.log('OPEN', ws);
+      console.log('OPEN', ws);
     },
     close(ws) {
       // console.log('CLOSE', ws);
