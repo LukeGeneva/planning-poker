@@ -1,22 +1,19 @@
+import type { ServerWebSocket } from 'bun';
 import { renderToString } from 'react-dom/server';
-import { Home } from './pages/home';
-import { MemoryPointingSessionRepository } from './adapters/MemoryPointingSessionRepository';
-import { CreatePointingSessionUseCase } from './use-cases/CreatePointingSessionUseCase';
-import { ViewPointingSessionUseCase } from './use-cases/ViewPointingSessionUseCase';
 import { PointingSession } from './pages/pointing-session';
+import { Home } from './pages/home';
 import { SetName } from './pages/set-name';
-import { JoinPointingSessionUseCase } from './use-cases/JoinPointingSessionUseCase';
+import { CookieJar } from './CookieJar';
+import {
+  castVote,
+  createPointingSession,
+  joinPointingSession,
+  viewPointingSession,
+} from './compositionRoot';
+import { RoomCollection } from './RoomCollection';
+import type { PointingSessionSocketData } from './PointingSessionSocketData';
 
-const pointingSessionRepository = new MemoryPointingSessionRepository();
-const createPointingSession = new CreatePointingSessionUseCase(
-  pointingSessionRepository
-);
-const viewPointingSession = new ViewPointingSessionUseCase(
-  pointingSessionRepository
-);
-const joinPointingSession = new JoinPointingSessionUseCase(
-  pointingSessionRepository
-);
+const rooms = new RoomCollection();
 
 Bun.serve({
   port: 3000, // defaults to $BUN_PORT, $PORT, $NODE_PORT otherwise 3000
@@ -60,7 +57,13 @@ Bun.serve({
         pointingSessionId: sessionId,
         participantName: participant,
       });
-      return Response.redirect(`/pointing-session/${sessionId}`);
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: `/pointing-session/${sessionId}`,
+          'Set-Cookie': `participant=${participant}`,
+        },
+      });
     }
 
     if (url.pathname.startsWith('/pointing-session') && req.method === 'GET') {
@@ -71,8 +74,26 @@ Bun.serve({
       });
     }
 
-    if (url.pathname === '/socket') {
-      if (server.upgrade(req)) {
+    if (
+      req.method === 'POST' &&
+      url.pathname.startsWith('/pointing-session') &&
+      url.pathname.endsWith('vote')
+    ) {
+      const pointingSessionId = url.pathname.split('/')[2];
+      const cookies = new CookieJar(req.headers.get('Cookie'));
+      const participant = cookies.get('participant');
+      const formData = await req.formData();
+      const points = Number.parseInt(
+        formData.get('points')?.toString() || '0',
+        10
+      );
+      await castVote.execute({ pointingSessionId, participant, points });
+      return Response.redirect(`/pointing-session/${pointingSessionId}`);
+    }
+
+    if (url.pathname.endsWith('/socket')) {
+      const pointingSessionId = url.pathname.split('/')[1];
+      if (server.upgrade(req, { data: { pointingSessionId } })) {
         return; // do not return a Response
       }
       return new Response('Upgrade failed', { status: 500 });
@@ -81,14 +102,14 @@ Bun.serve({
     return new Response('404!');
   },
   websocket: {
-    open(ws) {
-      console.log('OPEN', ws);
+    open(socket: ServerWebSocket<PointingSessionSocketData>) {
+      rooms.joinOrCreate(socket);
     },
-    close(ws) {
-      // console.log('CLOSE', ws);
+    close(socket: ServerWebSocket<PointingSessionSocketData>) {
+      rooms.leave(socket);
     },
     message(ws, message) {
-      // console.log('MESSAGE', message);
+      console.log('MESSAGE', message);
     },
   },
 });

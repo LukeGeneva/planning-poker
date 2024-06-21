@@ -8,6 +8,13 @@ export class PointingSession extends Entity {
     return Array.from(this._participants.values());
   }
 
+  get votes() {
+    return this.participants.map((participant) => ({
+      participant,
+      vote: this._votes.get(participant) || null,
+    }));
+  }
+
   constructor() {
     super();
     this._participants = new Set<string>();

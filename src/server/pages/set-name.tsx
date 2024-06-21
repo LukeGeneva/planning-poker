@@ -1,9 +1,7 @@
 export function SetName(pointingSessionId: string) {
   return (
     <html>
-      <head>
-        <script type="text/javascript" src="/set-name.js"></script>
-      </head>
+      <head></head>
       <body>
         <form
           action={`/pointing-session/${pointingSessionId}/join`}
