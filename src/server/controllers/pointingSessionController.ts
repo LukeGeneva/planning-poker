@@ -7,7 +7,7 @@ import {
 import { renderToString } from 'react-dom/server';
 import { PointingSession, renderParticipants } from '../pages/pointing-session';
 import { CookieJar } from '../CookieJar';
-import { SetName } from '../pages/set-name';
+import { Join } from '../pages/join';
 import type { Server } from 'bun';
 
 async function get(req: Request) {
@@ -55,7 +55,7 @@ async function postParticipant(req: Request) {
 async function getJoin(req: Request) {
   const url = new URL(req.url);
   const sessionId = url.pathname.split('/')[2];
-  return new Response(renderToString(SetName(sessionId)), {
+  return new Response(renderToString(Join(sessionId)), {
     headers: { 'Content-Type': 'text/html' },
   });
 }

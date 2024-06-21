@@ -1,4 +1,4 @@
-export function SetName(pointingSessionId: string) {
+export function Join(pointingSessionId: string) {
   return (
     <html>
       <head></head>
