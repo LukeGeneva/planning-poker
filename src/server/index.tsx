@@ -11,6 +11,7 @@ import {
   viewPointingSession,
 } from './compositionRoot';
 import type { PointingSessionSocketData } from './PointingSessionSocketData';
+import { pointingSessionController } from './controllers/pointingSessionController';
 
 const server = Bun.serve({
   port: 3000, // defaults to $BUN_PORT, $PORT, $NODE_PORT otherwise 3000
@@ -63,13 +64,8 @@ const server = Bun.serve({
       });
     }
 
-    if (url.pathname.startsWith('/pointing-session') && req.method === 'GET') {
-      const sessionId = url.pathname.split('/')[2];
-      const output = await viewPointingSession.execute(sessionId);
-      return new Response(renderToString(PointingSession(output)), {
-        headers: { 'Content-Type': 'text/html' },
-      });
-    }
+    if (url.pathname.startsWith('/pointing-session') && req.method === 'GET')
+      return pointingSessionController.get(req);
 
     if (
       req.method === 'POST' &&
