@@ -10,10 +10,7 @@ import {
   joinPointingSession,
   viewPointingSession,
 } from './compositionRoot';
-import { RoomCollection } from './RoomCollection';
 import type { PointingSessionSocketData } from './PointingSessionSocketData';
-
-const rooms = new RoomCollection();
 
 const server = Bun.serve({
   port: 3000, // defaults to $BUN_PORT, $PORT, $NODE_PORT otherwise 3000
