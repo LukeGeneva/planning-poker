@@ -1,15 +1,9 @@
 import type { ServerWebSocket } from 'bun';
 import { renderToString } from 'react-dom/server';
-import { PointingSession } from './pages/pointing-session';
 import { Home } from './pages/home';
 import { SetName } from './pages/set-name';
 import { CookieJar } from './CookieJar';
-import {
-  castVote,
-  createPointingSession,
-  joinPointingSession,
-  viewPointingSession,
-} from './compositionRoot';
+import { castVote, joinPointingSession } from './compositionRoot';
 import type { PointingSessionSocketData } from './PointingSessionSocketData';
 import { pointingSessionController } from './controllers/pointingSessionController';
 
@@ -25,12 +19,8 @@ const server = Bun.serve({
     if (url.pathname.endsWith('.js'))
       return new Response(Bun.file(`./src/public${url.pathname}`));
 
-    if (url.pathname === '/pointing-session' && req.method === 'POST') {
-      const output = await createPointingSession.execute();
-      return Response.redirect(
-        `/pointing-session/${output.pointingSessionId}/join`
-      );
-    }
+    if (url.pathname === '/pointing-session' && req.method === 'POST')
+      return pointingSessionController.post();
 
     if (
       url.pathname.startsWith('/pointing-session') &&
@@ -42,6 +32,9 @@ const server = Bun.serve({
         headers: { 'Content-Type': 'text/html' },
       });
     }
+
+    if (url.pathname.startsWith('/pointing-session') && req.method === 'GET')
+      return pointingSessionController.get(req);
 
     if (
       url.pathname.startsWith('/pointing-session') &&
@@ -63,9 +56,6 @@ const server = Bun.serve({
         },
       });
     }
-
-    if (url.pathname.startsWith('/pointing-session') && req.method === 'GET')
-      return pointingSessionController.get(req);
 
     if (
       req.method === 'POST' &&

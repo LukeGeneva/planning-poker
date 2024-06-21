@@ -1,4 +1,4 @@
-import { viewPointingSession } from '../compositionRoot';
+import { createPointingSession, viewPointingSession } from '../compositionRoot';
 import { renderToString } from 'react-dom/server';
 import { PointingSession } from '../pages/pointing-session';
 import { CookieJar } from '../CookieJar';
@@ -16,6 +16,14 @@ async function get(req: Request) {
   });
 }
 
+async function post() {
+  const output = await createPointingSession.execute();
+  return Response.redirect(
+    `/pointing-session/${output.pointingSessionId}/join`
+  );
+}
+
 export const pointingSessionController = {
   get,
+  post,
 };
