@@ -13,24 +13,23 @@ export function PointingSession(
       </head>
       <body>
         <h1>Session {viewPointingSessionOutput.id}</h1>
-        <form
-          action={`/pointing-session/${viewPointingSessionOutput.id}/vote`}
-          method="POST"
-        >
-          <ul>
-            {pointOptions.map((points) => (
-              <li key={`points-${points}`}>
-                <button type="submit" name="points" value={points}>
-                  {points}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </form>
+        <input type="hidden" value="test" name="test" />
+        <ul>
+          {pointOptions.map((points) => (
+            <li key={`points-${points}`}>
+              <button type="button" name="points" value={points}>
+                {points}
+              </button>
+            </li>
+          ))}
+        </ul>
         <ul>
           {viewPointingSessionOutput.participants.map((p) => (
             <li key={p.participant}>
-              {p.participant} {p.vote || ''}
+              {p.participant} {p.vote || ''}{' '}
+              <span id={`${p.participant}HasVoted`} hidden={p.vote === null}>
+                X
+              </span>
             </li>
           ))}
         </ul>

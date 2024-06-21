@@ -15,7 +15,7 @@ import type { PointingSessionSocketData } from './PointingSessionSocketData';
 
 const rooms = new RoomCollection();
 
-Bun.serve({
+const server = Bun.serve({
   port: 3000, // defaults to $BUN_PORT, $PORT, $NODE_PORT otherwise 3000
   async fetch(req, server) {
     const url = new URL(req.url);
@@ -88,12 +88,18 @@ Bun.serve({
         10
       );
       await castVote.execute({ pointingSessionId, participant, points });
+      const data = { type: 'VOTE', participant };
+      server.publish(pointingSessionId, JSON.stringify(data));
       return Response.redirect(`/pointing-session/${pointingSessionId}`);
     }
 
     if (url.pathname.endsWith('/socket')) {
       const pointingSessionId = url.pathname.split('/')[1];
-      if (server.upgrade(req, { data: { pointingSessionId } })) {
+      const cookie = new URL(req.url).searchParams.get('cookie');
+      const cookies = new CookieJar(cookie);
+      const participant = cookies.get('participant');
+      console.log(participant);
+      if (server.upgrade(req, { data: { pointingSessionId, participant } })) {
         return; // do not return a Response
       }
       return new Response('Upgrade failed', { status: 500 });
@@ -103,10 +109,13 @@ Bun.serve({
   },
   websocket: {
     open(socket: ServerWebSocket<PointingSessionSocketData>) {
-      rooms.joinOrCreate(socket);
+      const { pointingSessionId, participant } = socket.data;
+      socket.subscribe(pointingSessionId);
+      const data = { type: 'USER_JOINED', participant };
+      server.publish(pointingSessionId, JSON.stringify(data));
     },
     close(socket: ServerWebSocket<PointingSessionSocketData>) {
-      rooms.leave(socket);
+      socket.unsubscribe(socket.data.pointingSessionId);
     },
     message(ws, message) {
       console.log('MESSAGE', message);
