@@ -19,4 +19,8 @@ export class CookieJar {
     if (!value) throw new Error('Cookie not found.');
     return value;
   }
+
+  exists(key: string) {
+    return this._cookies.has(key);
+  }
 }
