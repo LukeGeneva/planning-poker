@@ -3,7 +3,8 @@ import type { ViewPointingSessionOutput } from '../../use-cases/ViewPointingSess
 const pointOptions = [0, 1, 2, 3, 5, 13, 21];
 
 export function PointingSession(
-  viewPointingSessionOutput: ViewPointingSessionOutput
+  viewPointingSessionOutput: ViewPointingSessionOutput,
+  viewer: string
 ) {
   return (
     <html>
@@ -23,17 +24,29 @@ export function PointingSession(
             </li>
           ))}
         </ul>
-        <ul>
-          {viewPointingSessionOutput.participants.map((p) => (
-            <li key={p.participant}>
-              {p.participant} {p.vote || ''}{' '}
-              <span id={`${p.participant}HasVoted`} hidden={p.vote === null}>
-                X
-              </span>
-            </li>
-          ))}
-        </ul>
+        {renderParticipants(viewPointingSessionOutput, viewer)}
       </body>
     </html>
   );
+}
+
+export function renderParticipants(
+  viewPointingSessionOutput: ViewPointingSessionOutput,
+  viewer: string
+) {
+  return (
+    <ul id="participants">
+      {viewPointingSessionOutput.participants.map((p) => (
+        <li key={p.participant}>
+          {p.participant} {renderVote(viewer, p.participant, p.vote)}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function renderVote(viewer: string, participant: string, vote: number | null) {
+  if (vote === null) return '';
+  if (viewer === participant) return vote.toString();
+  return 'X';
 }

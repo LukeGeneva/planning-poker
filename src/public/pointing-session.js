@@ -5,9 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     `ws://localhost:3000/${pointingSessionId}/socket?cookie=${document.cookie}`
   );
 
+  const participants = document.getElementById('participants');
+
   socket.addEventListener('message', (message) => {
     const data = JSON.parse(message.data);
-    if (data.type === 'VOTE') updateParticipantVote(data.participant);
+    if (data.type === 'STATE_CHANGED') participants.innerHTML = data.html;
   });
 
   document
@@ -23,9 +25,4 @@ function handleVote(e) {
   const formData = { points: e.target.value };
   const encodedData = new URLSearchParams(formData).toString();
   xhr.send(encodedData);
-}
-
-function updateParticipantVote(participant) {
-  const span = document.getElementById(`${participant}HasVoted`);
-  span.hidden = false;
 }

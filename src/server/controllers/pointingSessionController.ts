@@ -1,16 +1,27 @@
-import { createPointingSession, viewPointingSession } from '../compositionRoot';
+import {
+  castVote,
+  createPointingSession,
+  joinPointingSession,
+  viewPointingSession,
+} from '../compositionRoot';
 import { renderToString } from 'react-dom/server';
-import { PointingSession } from '../pages/pointing-session';
+import { PointingSession, renderParticipants } from '../pages/pointing-session';
 import { CookieJar } from '../CookieJar';
+import { SetName } from '../pages/set-name';
+import type { Server } from 'bun';
 
 async function get(req: Request) {
   const url = new URL(req.url);
-  const sessionId = url.pathname.split('/')[2];
+  const pointingSessionId = url.pathname.split('/')[2];
   const cookies = new CookieJar(req.headers.get('Cookie'));
   if (!cookies.exists('participant'))
-    return Response.redirect(`/pointing-session/${sessionId}/join`);
+    return Response.redirect(`/pointing-session/${pointingSessionId}/join`);
 
-  const output = await viewPointingSession.execute(sessionId);
+  const viewer = cookies.get('participant');
+  const output = await viewPointingSession.execute({
+    pointingSessionId,
+    viewer,
+  });
   return new Response(renderToString(PointingSession(output)), {
     headers: { 'Content-Type': 'text/html' },
   });
@@ -23,7 +34,58 @@ async function post() {
   );
 }
 
+async function postParticipant(req: Request) {
+  const url = new URL(req.url);
+  const sessionId = url.pathname.split('/')[2];
+  const data = await req.formData();
+  const participant = data.get('participant')?.toString() || '';
+  await joinPointingSession.execute({
+    pointingSessionId: sessionId,
+    participantName: participant,
+  });
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: `/pointing-session/${sessionId}`,
+      'Set-Cookie': `participant=${participant}`,
+    },
+  });
+}
+
+async function getJoin(req: Request) {
+  const url = new URL(req.url);
+  const sessionId = url.pathname.split('/')[2];
+  return new Response(renderToString(SetName(sessionId)), {
+    headers: { 'Content-Type': 'text/html' },
+  });
+}
+
+async function postVote(req: Request, server: Server) {
+  const url = new URL(req.url);
+  const pointingSessionId = url.pathname.split('/')[2];
+  const cookies = new CookieJar(req.headers.get('Cookie'));
+  const participant = cookies.get('participant');
+  const formData = await req.formData();
+  const points = Number.parseInt(formData.get('points')?.toString() || '0', 10);
+  await castVote.execute({ pointingSessionId, participant, points });
+  const viewOutput = await viewPointingSession.execute({ pointingSessionId });
+  for (const p of viewOutput.participants) {
+    const data = {
+      type: 'STATE_CHANGED',
+      html: renderToString(renderParticipants(viewOutput, p.participant)),
+    };
+    server.publish(
+      `${pointingSessionId}-${p.participant}`,
+      JSON.stringify(data)
+    );
+  }
+  return Response.redirect(`/pointing-session/${pointingSessionId}`);
+}
+
 export const pointingSessionController = {
   get,
   post,
+  postParticipant,
+  getJoin,
+  postVote,
 };

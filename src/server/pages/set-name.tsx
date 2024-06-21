@@ -4,7 +4,7 @@ export function SetName(pointingSessionId: string) {
       <head></head>
       <body>
         <form
-          action={`/pointing-session/${pointingSessionId}/join`}
+          action={`/pointing-session/${pointingSessionId}/participant`}
           method="POST"
         >
           <input type="text" id="participant" name="participant" />
