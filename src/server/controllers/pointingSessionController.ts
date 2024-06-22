@@ -20,9 +20,8 @@ async function get(req: Request) {
   const viewer = cookies.get('participant');
   const output = await viewPointingSession.execute({
     pointingSessionId,
-    viewer,
   });
-  return new Response(renderToString(PointingSession(output)), {
+  return new Response(renderToString(PointingSession(output, viewer)), {
     headers: { 'Content-Type': 'text/html' },
   });
 }
